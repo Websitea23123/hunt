@@ -5,16 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>THE HUNT</title>
 
-<!--
-  ============ HIDDEN CLUE #1 (view-source) ============
-  Fragment 1 of 3 of the access key, base64-encoded:
-
-      WiM=
-
-  Decode it (echo WiM= | base64 -d) to get the first two characters.
-  ======================================================
--->
-
 <style>
   :root{
     --night-1:#0b1e2d;
@@ -38,8 +28,9 @@
     touch-action:manipulation;
     -webkit-user-select:none; user-select:none;
   }
+  input{ -webkit-user-select:text; user-select:text; }
 
-  /* ---------- deep background: aurora + stars ---------- */
+  /* ================= BACKGROUND ================= */
   #bg{position:fixed; inset:0; z-index:0; pointer-events:none; will-change:transform;}
   .aurora{
     position:absolute; inset:-25%;
@@ -62,8 +53,18 @@
     animation:twinkle 3.5s ease-in-out infinite;
   }
   @keyframes twinkle{0%,100%{opacity:.12; transform:scale(.7);}50%{opacity:.9; transform:scale(1.35);}}
+  .shoot{
+    position:absolute; width:110px; height:2px; border-radius:2px;
+    background:linear-gradient(90deg,#fff,#ffe9a8aa,transparent);
+    filter:drop-shadow(0 0 6px #ffe9a8);
+    opacity:0; animation:shoot linear infinite;
+  }
+  @keyframes shoot{
+    0%{opacity:0; transform:translate3d(0,0,0) rotate(-35deg);}
+    2%{opacity:.9;}
+    8%,100%{opacity:0; transform:translate3d(-46vw,32vh,0) rotate(-35deg);}
+  }
 
-  /* ---------- rising sparkles + treasures ---------- */
   .sparkles{position:fixed; inset:0; pointer-events:none; z-index:1; will-change:transform;}
   .spark{
     position:absolute; bottom:-10px; width:6px; height:6px; border-radius:50%;
@@ -87,16 +88,15 @@
   }
   @keyframes breathe{0%,100%{opacity:.55;}50%{opacity:1;}}
 
-  /* ---------- screens ---------- */
+  /* ================= SCREENS ================= */
   .screen{
     position:fixed; inset:0; z-index:2;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     text-align:center;
-    padding:calc(24px + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right))
-            calc(24px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left));
+    padding:calc(22px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right))
+            calc(22px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));
   }
 
-  /* ---------- SOLID, ALWAYS-VISIBLE TITLES (no gradient-clip trick) ---------- */
   .title{
     color:var(--gold-light);
     font-weight:900;
@@ -107,11 +107,12 @@
     0%,100%{text-shadow:0 3px 0 var(--ink), 0 0 14px rgba(232,167,44,.35);}
     50%{text-shadow:0 3px 0 var(--ink), 0 0 30px rgba(244,201,93,.8);}
   }
+  @keyframes fadeUp{from{opacity:0; transform:translateY(22px);}to{opacity:1; transform:translateY(0);}}
 
-  /* ---------- LOADING SCREEN ---------- */
+  /* ================= LOADER ================= */
   #loader{z-index:5; transition:opacity .6s ease, visibility .6s;}
   #loader.hide{opacity:0; visibility:hidden;}
-  .compass-wrap{position:relative; display:grid; place-items:center;}
+  .compass-wrap{position:relative; display:grid; place-items:center; animation:fadeUp .7s .05s both;}
   .pulse-ring{
     position:absolute; width:150px; height:150px; border-radius:50%;
     border:2px solid var(--gold-deep); animation:ring 2s ease-out infinite;
@@ -122,19 +123,17 @@
   .chest{
     font-size:clamp(72px,26vw,140px); line-height:1;
     filter:drop-shadow(0 8px 18px #000a);
-    animation:bob 2.2s ease-in-out infinite, compassPulse 3s ease-in-out infinite;
+    animation:bob 2.2s ease-in-out infinite;
   }
   @keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg);}50%{transform:translateY(-16px) rotate(6deg);}}
-  @keyframes compassPulse{
-    0%,100%{filter:drop-shadow(0 8px 18px #000a) drop-shadow(0 0 0 #f4c95d00);}
-    50%{filter:drop-shadow(0 8px 18px #000a) drop-shadow(0 0 22px #f4c95daa);}
-  }
-  .loadtitle{font-size:clamp(30px,10vw,48px); letter-spacing:.18em; margin:18px 0 6px;}
+  .loadtitle{font-size:clamp(30px,10vw,48px); letter-spacing:.18em; margin:18px 0 6px;
+    animation:fadeUp .7s .2s both, glow 2.8s ease-in-out .9s infinite;}
   .loadsub{font-size:14px; letter-spacing:.3em; opacity:.75; text-transform:uppercase; color:var(--gold-light);
-    animation:fade 2s ease-in-out infinite;}
+    animation:fadeUp .7s .35s both, fade 2s ease-in-out 1.1s infinite;}
   @keyframes fade{0%,100%{opacity:.45;}50%{opacity:.9;}}
   .bar{width:min(78vw,320px); height:12px; margin-top:26px;
-    background:#ffffff1a; border:1px solid var(--gold-deep); border-radius:20px; overflow:hidden;}
+    background:#ffffff1a; border:1px solid var(--gold-deep); border-radius:20px; overflow:hidden;
+    animation:fadeUp .7s .45s both;}
   .bar > i{display:block; height:100%; width:0%;
     background:linear-gradient(90deg,var(--gold-deep),var(--gold-light),var(--gold-deep));
     box-shadow:0 0 14px var(--gold); animation:fill 2.6s ease forwards;}
@@ -145,118 +144,224 @@
   @keyframes blink{0%,100%{opacity:.4;}50%{opacity:1;}}
   @keyframes tapBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
 
-  /* ---------- VAULT (main) ---------- */
+  /* ================= VAULT ================= */
   #vault{opacity:0; visibility:hidden; transition:opacity .7s ease .1s, visibility .7s;}
   #vault.show{opacity:1; visibility:visible;}
-  .coin-emoji{font-size:clamp(40px,14vw,66px); animation:spin 4s linear infinite, floaty 3s ease-in-out infinite;
+  #vault.show .coin-emoji{animation:spin 4s linear infinite, floaty 3s ease-in-out infinite, fadeUp .6s .05s both;}
+  #vault.show h1{animation:fadeUp .6s .15s both, glow 2.8s ease-in-out 1s infinite;}
+  #vault.show .lead{animation:fadeUp .6s .26s both;}
+  #vault.show .slot-row{animation:fadeUp .6s .38s both;}
+  #vault.show .hud{animation:fadeUp .6s .5s both;}
+
+  .coin-emoji{font-size:clamp(40px,13vw,64px);
     filter:drop-shadow(0 0 12px #e8a72c66);}
   @keyframes spin{to{transform:rotateY(360deg);}}
   @keyframes floaty{0%,100%{margin-top:0;}50%{margin-top:-10px;}}
-  h1{font-size:clamp(32px,11vw,54px); letter-spacing:.08em; margin:.35em 0 .1em;}
-  .lead{font-size:clamp(14px,4vw,17px); opacity:.88; max-width:34ch; margin:0 0 26px; color:var(--gold-light);}
+  h1{font-size:clamp(30px,10vw,52px); letter-spacing:.08em; margin:.3em 0 .1em;}
+  .lead{font-size:clamp(13px,3.8vw,16px); opacity:.88; max-width:36ch; margin:0 0 20px;
+    color:var(--gold-light); line-height:1.5;}
+  .lead b{color:var(--gem);}
+  .lead em{color:var(--ruby); font-style:normal; font-weight:700;}
 
-  #vault.show h1{animation:fadeUp .6s .05s both, glow 2.8s ease-in-out 1s infinite;}
-  #vault.show .lead{animation:fadeUp .6s .18s both;}
-  #vault.show .code-row{animation:fadeUp .6s .30s both;}
-  #vault.show .open{animation:fadeUp .6s .42s both;}
-  @keyframes fadeUp{from{opacity:0; transform:translateY(22px);}to{opacity:1; transform:translateY(0);}}
-
-  .code-row{display:flex; gap:clamp(5px,1.8vw,14px); justify-content:center; margin-bottom:26px;
+  .slot-row{display:flex; gap:clamp(5px,1.7vw,12px); justify-content:center; margin-bottom:16px;
     max-width:100%; flex-wrap:nowrap;}
-  .digit{
-    width:clamp(38px,12.5vw,56px); flex:0 0 auto; height:clamp(52px,16.5vw,74px);
+  .cell{display:flex; flex-direction:column; align-items:center; gap:7px; flex:0 0 auto;}
+  .slot{
+    width:clamp(40px,12.2vw,56px); height:clamp(52px,16vw,74px);
     background:linear-gradient(180deg,#0e2836,#071a24);
     border:2px solid var(--gold-deep); border-radius:12px;
     color:var(--gold-light); text-align:center; text-transform:uppercase;
     caret-color:var(--gold);
-    font-family:"Courier New",monospace; font-size:clamp(24px,7vw,34px); font-weight:700;
+    font-family:"Courier New",monospace; font-size:clamp(22px,7vw,32px); font-weight:700;
     box-shadow:inset 0 2px 8px #000a;
     animation:idleGlow 2.6s ease-in-out infinite;
-    transition:transform .12s ease, box-shadow .25s ease, border-color .25s;
+    animation-delay:var(--d,0s);
+    transition:transform .12s ease, box-shadow .25s ease, border-color .25s, background .3s;
   }
-  @keyframes idleGlow{0%,100%{box-shadow:inset 0 2px 8px #000a, 0 0 0 0 #E8A72C00;}50%{box-shadow:inset 0 2px 8px #000a, 0 0 12px 1px #E8A72C55;}}
-  .digit:focus{outline:none; border-color:var(--gold);
-    box-shadow:inset 0 2px 8px #000a, 0 0 20px 3px var(--gold-deep); transform:translateY(-4px); animation:none;}
-  .digit.filled{border-color:var(--gold); animation:pop .2s ease;}
-  @keyframes pop{50%{transform:scale(1.16);}}
-  .digit.wrong{border-color:var(--ruby); animation:none;
+  .cell:nth-child(2) .slot{--d:-.43s;} .cell:nth-child(3) .slot{--d:-.86s;}
+  .cell:nth-child(4) .slot{--d:-1.3s;} .cell:nth-child(5) .slot{--d:-1.73s;}
+  .cell:nth-child(6) .slot{--d:-2.16s;}
+  @keyframes idleGlow{0%,100%{box-shadow:inset 0 2px 8px #000a, 0 0 0 0 #E8A72C00;}
+    50%{box-shadow:inset 0 2px 8px #000a, 0 0 12px 1px #E8A72C55;}}
+  .slot:focus{outline:none; border-color:var(--gold); animation:none;
+    box-shadow:inset 0 2px 8px #000a, 0 0 20px 3px var(--gold-deep); transform:translateY(-4px);}
+  .slot.wrong{border-color:var(--ruby); color:#ffb9a6; animation:slotShake .38s;
     box-shadow:inset 0 2px 8px #000a, 0 0 16px 2px #e4572e99;}
-  .digit.good{border-color:var(--gem); color:#eafff8; animation:goodGlow 1.8s ease-in-out infinite;}
+  @keyframes slotShake{
+    15%,55%{transform:translateX(-6px);}
+    35%,75%{transform:translateX(6px);}
+    100%{transform:translateX(0);}
+  }
+  .slot.locked{
+    border-color:var(--gem); color:#eafff8;
+    background:linear-gradient(180deg,#0c3125,#07201a);
+    animation:lockPop .3s ease, goodGlow 2s ease-in-out .3s infinite;
+  }
+  @keyframes lockPop{45%{transform:scale(1.18) rotate(3deg);}}
   @keyframes goodGlow{0%,100%{box-shadow:inset 0 2px 8px #000a, 0 0 10px 1px #2fbf9f66;}
     50%{box-shadow:inset 0 2px 8px #000a, 0 0 20px 3px #2fbf9faa;}}
+  .slot.jammed{
+    border-color:var(--ruby); color:#ffb9a6; cursor:pointer;
+    background:linear-gradient(180deg,#3a120c,#200a06);
+    animation:jamPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes jamPulse{0%,100%{box-shadow:inset 0 2px 8px #000a, 0 0 8px 1px #e4572e55;}
+    50%{box-shadow:inset 0 2px 8px #000a, 0 0 18px 3px #e4572e99;}}
+  @media (hover:hover){
+    .slot:hover:not(:focus):not(.locked):not(.jammed){border-color:var(--gold); transform:translateY(-2px);}
+  }
 
-  /* ---------- toast popup ---------- */
+  .pill{
+    min-width:34px; text-align:center;
+    font-size:10.5px; font-weight:800; letter-spacing:.08em;
+    color:var(--gold-light); background:#0e2836aa;
+    border:1px solid #E8A72C55; border-radius:10px; padding:2px 7px;
+    transition:color .25s, border-color .25s, background .3s;
+  }
+  .pill.low{color:#ffb9a6; border-color:#E4572E99;}
+  .pill.ok{color:#c9ffef; border-color:var(--gem); background:#0c312599;}
+  .pill.jam{color:#ffd7cd; border-color:var(--ruby); background:#5a171299;
+    animation:blink 1.2s ease-in-out infinite;}
+
+  .hud{display:flex; gap:14px; align-items:center; justify-content:center;
+    font-size:12px; letter-spacing:.16em; text-transform:uppercase; opacity:.85;
+    margin-bottom:14px;}
+  .hud b{color:var(--gem); font-weight:900;}
+  .hud .miss b{color:var(--ruby);}
+  .hud .sep{opacity:.4;}
+
+  /* ================= TOAST ================= */
   .toast{
     position:fixed; left:50%; top:calc(14px + env(safe-area-inset-top));
-    transform:translate(-50%,-160%); z-index:10;
-    max-width:min(88vw,420px);
+    transform:translate(-50%,-170%); z-index:30;
+    max-width:min(90vw,430px);
     background:linear-gradient(180deg,#123141,#0a2230);
     border:1px solid var(--ruby); border-radius:14px;
-    color:var(--gold-light); font-weight:800; letter-spacing:.03em; font-size:14px; line-height:1.3;
-    padding:13px 20px; text-align:center;
+    color:var(--gold-light); font-weight:800; letter-spacing:.03em; font-size:13.5px; line-height:1.4;
+    padding:12px 18px; text-align:center;
     box-shadow:0 12px 34px #000b, 0 0 22px #e4572e44;
     opacity:0; pointer-events:none;
     transition:transform .2s cubic-bezier(.2,.9,.3,1), opacity .16s ease-out;
   }
+  .toast b{color:var(--ruby);}
+  .toast.good{border-color:var(--gem); box-shadow:0 12px 34px #000b, 0 0 22px #2fbf9f44;}
+  .toast.good b{color:var(--gem);}
   .toast.show{transform:translate(-50%,0); opacity:1;}
 
-  .open{
-    position:relative; overflow:hidden;
-    font-weight:900; letter-spacing:.16em; text-transform:uppercase; font-size:17px;
-    color:var(--ink); padding:16px 40px; border:none; border-radius:40px;
-    background:linear-gradient(180deg,var(--gold-light),var(--gold-deep));
-    box-shadow:0 6px 0 #8a6210, 0 8px 22px #000a;
-    cursor:pointer; transition:transform .1s ease, box-shadow .1s ease;
+  /* lock spark burst */
+  .burst{
+    position:fixed; width:5px; height:5px; border-radius:50%; z-index:6; pointer-events:none;
+    background:var(--gold); box-shadow:0 0 9px var(--gold-deep);
+    animation:burstFly .62s ease-out forwards;
   }
-  .open::after{content:""; position:absolute; top:0; left:-60%; width:40%; height:100%;
-    background:linear-gradient(100deg,transparent,#ffffffcc,transparent); transform:skewX(-20deg);
-    animation:sweepBtn 2.8s ease-in-out infinite;}
-  @keyframes sweepBtn{0%{left:-60%;}55%,100%{left:130%;}}
-  .open:active{transform:translateY(4px); box-shadow:0 2px 0 #8a6210, 0 4px 14px #000a;}
-  .open:disabled{filter:grayscale(.4) brightness(.8);}
-  .msg{min-height:1.6em; margin-top:18px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; font-size:15px;
-    color:var(--gold-light);}
-  .msg.bad{color:var(--ruby);}
+  @keyframes burstFly{to{transform:translate(var(--dx),var(--dy)) scale(.15); opacity:0;}}
 
-  .shake{animation:shake .42s;}
-  @keyframes shake{10%,90%{transform:translateX(-4px);}30%,70%{transform:translateX(7px);}50%{transform:translateX(-11px);}}
-  .redflash{animation:rf .4s ease;}
-  @keyframes rf{0%{background:radial-gradient(120% 90% at 50% 0%,var(--night-1),var(--night-2) 70%);}30%{background:radial-gradient(120% 90% at 50% 0%,#5a1712,#04121c 70%);}100%{background:radial-gradient(120% 90% at 50% 0%,var(--night-1),var(--night-2) 70%);}}
+  /* ================= OVERRIDE MODAL ================= */
+  .modal-back{
+    position:fixed; inset:0; z-index:25;
+    background:#03101ad9;
+    display:flex; align-items:center; justify-content:center;
+    padding:20px; overflow-y:auto;
+    opacity:0; visibility:hidden;
+    transition:opacity .25s ease, visibility .25s;
+  }
+  .modal-back.show{opacity:1; visibility:visible;}
+  .modal{
+    width:min(88vw,340px);
+    background:linear-gradient(180deg,#123141,#0a2230);
+    border:1px solid var(--gold-deep); border-radius:18px;
+    padding:22px 20px 20px; text-align:center;
+    box-shadow:0 18px 50px #000d, 0 0 30px #e8a72c33;
+    transform:scale(.85) translateY(14px);
+    transition:transform .25s cubic-bezier(.2,.9,.3,1.2);
+  }
+  .modal-back.show .modal{transform:scale(1) translateY(0);}
+  .modal.shake{animation:slotShake .38s;}
+  .modal-emoji{font-size:44px; filter:drop-shadow(0 4px 10px #000a);
+    animation:bob 2.4s ease-in-out infinite;}
+  .modal h2{margin:10px 0 6px; font-size:20px; letter-spacing:.12em; color:var(--gold-light);
+    text-shadow:0 2px 0 var(--ink);}
+  .modal h2 b{color:var(--ruby);}
+  .modal p{margin:0 0 14px; font-size:13px; opacity:.85; line-height:1.5;}
+  #override{
+    width:100%; padding:12px; text-align:center; text-transform:uppercase;
+    background:linear-gradient(180deg,#0e2836,#071a24);
+    border:2px solid var(--gold-deep); border-radius:12px;
+    color:var(--gold-light); caret-color:var(--gold);
+    font-family:"Courier New",monospace; font-size:22px; font-weight:700; letter-spacing:.4em;
+    box-shadow:inset 0 2px 8px #000a;
+  }
+  #override:focus{outline:none; border-color:var(--gold);
+    box-shadow:inset 0 2px 8px #000a, 0 0 16px 2px var(--gold-deep);}
+  .modal-btns{display:flex; gap:10px; margin-top:14px;}
+  .mbtn{
+    flex:1; padding:13px 10px; border:none; border-radius:30px; cursor:pointer;
+    font-family:inherit; font-weight:900; letter-spacing:.14em; text-transform:uppercase; font-size:13px;
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .mbtn.go{
+    color:var(--ink);
+    background:linear-gradient(180deg,var(--gold-light),var(--gold-deep));
+    box-shadow:0 4px 0 #8a6210, 0 6px 16px #000a;
+  }
+  .mbtn.go:active{transform:translateY(3px); box-shadow:0 1px 0 #8a6210, 0 3px 10px #000a;}
+  .mbtn.ghost{
+    color:var(--gold-light); background:#ffffff12; border:1px solid #E8A72C55;
+  }
+  .mbtn.ghost:active{transform:translateY(2px);}
+  .modal-msg{min-height:1.4em; margin-top:10px; font-size:12.5px; font-weight:800;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--ruby);}
 
-  .buried{position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;}
-
-  /* ---------- WIN ---------- */
+  /* ================= WIN ================= */
   #win{z-index:8; opacity:0; visibility:hidden; transition:opacity .5s;
        background:radial-gradient(120% 90% at 50% 30%, #123 0%, #04121c 80%);}
   #win.show{opacity:1; visibility:visible;}
-  #confetti{position:fixed; inset:0; z-index:7; pointer-events:none;}
-  .flash{position:fixed; inset:0; z-index:9; background:#fff; opacity:0; pointer-events:none;}
-  .flash.go{animation:flash .5s ease;}
-  @keyframes flash{0%{opacity:.9;}100%{opacity:0;}}
-  .shockwave{position:fixed; left:50%; top:38%; width:20px; height:20px; margin:-10px 0 0 -10px;
-    border-radius:50%; border:3px solid var(--gold-light); z-index:8; opacity:0; pointer-events:none;}
-  .shockwave.go{animation:shock .9s ease-out;}
-  @keyframes shock{0%{opacity:.9; transform:scale(.2);}100%{opacity:0; transform:scale(26);}}
-  .pop-emoji{position:fixed; bottom:-40px; z-index:8; pointer-events:none;
-    animation:popup 2.2s ease-out forwards; filter:drop-shadow(0 4px 6px #0008);}
-  @keyframes popup{0%{transform:translateY(0) scale(.4) rotate(0); opacity:0;}
-    15%{opacity:1;}100%{transform:translateY(-92vh) scale(1.1) rotate(200deg); opacity:0;}}
   .rays{position:absolute; width:200vmax; height:200vmax; z-index:-1;
     background:conic-gradient(from 0deg, transparent 0 8deg, #f4c95d22 8deg 16deg);
     animation:sweep 14s linear infinite; opacity:.55;}
   @keyframes sweep{to{transform:rotate(360deg);}}
-  .bigchest{font-size:clamp(80px,30vw,170px); animation:burst .7s cubic-bezier(.2,1.6,.4,1), floaty 3s ease-in-out .8s infinite;}
-  @keyframes burst{0%{transform:scale(0) rotate(-25deg);}100%{transform:scale(1) rotate(0);}}
+  .bigchest{font-size:clamp(80px,30vw,170px);
+    animation:burstIn .7s cubic-bezier(.2,1.6,.4,1), floaty2 3s ease-in-out .8s infinite;}
+  @keyframes burstIn{0%{transform:scale(0) rotate(-25deg);}100%{transform:scale(1) rotate(0);}}
+  @keyframes floaty2{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
   .wintitle{
-    font-size:clamp(56px,20vw,140px); letter-spacing:.02em; line-height:.95;
+    font-size:clamp(52px,18vw,130px); letter-spacing:.02em; line-height:.95;
     color:var(--gold-light);
     text-shadow:0 4px 0 var(--ink), 0 0 34px var(--gold);
     animation:winpop .6s ease .15s both, pulse 1.4s ease-in-out 1s infinite;
   }
   @keyframes winpop{0%{transform:scale(.3); opacity:0;}70%{transform:scale(1.12);}100%{transform:scale(1); opacity:1;}}
   @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
-  .winsub{margin-top:10px; font-size:16px; letter-spacing:.24em; text-transform:uppercase; opacity:.9;
+  .winsub{margin-top:10px; font-size:15px; letter-spacing:.24em; text-transform:uppercase; opacity:.9;
     color:var(--gold-light); animation:fadeUp .6s .5s both;}
+
+  #confetti{position:fixed; inset:0; z-index:10; pointer-events:none;}
+  .flash{position:fixed; inset:0; z-index:11; background:#fff; opacity:0; pointer-events:none;}
+  .flash.go{animation:flash .5s ease;}
+  @keyframes flash{0%{opacity:.9;}100%{opacity:0;}}
+  .shockwave{position:fixed; left:50%; top:38%; width:20px; height:20px; margin:-10px 0 0 -10px;
+    border-radius:50%; border:3px solid var(--gold-light); z-index:10; opacity:0; pointer-events:none;}
+  .shockwave.go{animation:shock .9s ease-out;}
+  @keyframes shock{0%{opacity:.9; transform:scale(.2);}100%{opacity:0; transform:scale(26);}}
+  .pop-emoji{position:fixed; bottom:-40px; z-index:10; pointer-events:none;
+    animation:popup 2.2s ease-out forwards; filter:drop-shadow(0 4px 6px #0008);}
+  @keyframes popup{0%{transform:translateY(0) scale(.4) rotate(0); opacity:0;}
+    15%{opacity:1;}100%{transform:translateY(-92vh) scale(1.1) rotate(200deg); opacity:0;}}
+
+  /* ================= SMALL SCREENS / OPEN KEYBOARD ================= */
+  @media (max-width:420px){
+    .slot-row{gap:6px;}
+    .hud{gap:10px; font-size:11px;}
+  }
+  @media (max-height:660px){
+    #vault{justify-content:flex-start; overflow-y:auto;
+      padding-top:calc(14px + env(safe-area-inset-top));}
+    .coin-emoji{font-size:clamp(28px,8vw,40px);}
+    #vault h1{font-size:clamp(22px,7vw,34px);}
+    .lead{margin-bottom:12px;}
+    .slot-row{margin-bottom:12px;}
+    .modal-back{align-items:flex-start; padding-top:7vh;}
+  }
 
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001s !important; animation-iteration-count:1 !important;}
@@ -272,7 +377,7 @@
   <div class="sparkles" id="sparkles"></div>
   <div class="vignette"></div>
 
-  <!-- LOADING SCREEN -->
+  <!-- LOADER -->
   <div class="screen" id="loader">
     <div class="compass-wrap">
       <div class="pulse-ring"></div><div class="pulse-ring d2"></div><div class="pulse-ring d3"></div>
@@ -284,26 +389,46 @@
     <div class="tap" id="tap">tap to begin</div>
   </div>
 
-  <!-- VAULT / CODE ENTRY -->
+  <!-- VAULT -->
   <div class="screen" id="vault">
     <div class="coin-emoji">🪙</div>
     <h1 class="title">THE VAULT</h1>
-    <p class="lead">Six characters open it. Enter the key you recovered.</p>
+    <p class="lead">Type the 6-character key — each character is checked the moment you type it.
+      <b>Right ones lock in.</b> Wrong ones burn a try: <em>10 per slot</em>, then the slot jams.</p>
 
-    <div class="code-row" id="row">
-      <input class="digit" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" aria-label="character 1"/>
-      <input class="digit" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" aria-label="character 2"/>
-      <input class="digit" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" aria-label="character 3"/>
-      <input class="digit" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" aria-label="character 4"/>
-      <input class="digit" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" aria-label="character 5"/>
-      <input class="digit" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" aria-label="character 6"/>
+    <div class="slot-row" id="row">
+      <div class="cell">
+        <input class="slot" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="key character 1"/>
+        <span class="pill">×10</span>
+      </div>
+      <div class="cell">
+        <input class="slot" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="key character 2"/>
+        <span class="pill">×10</span>
+      </div>
+      <div class="cell">
+        <input class="slot" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="key character 3"/>
+        <span class="pill">×10</span>
+      </div>
+      <div class="cell">
+        <input class="slot" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="key character 4"/>
+        <span class="pill">×10</span>
+      </div>
+      <div class="cell">
+        <input class="slot" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="key character 5"/>
+        <span class="pill">×10</span>
+      </div>
+      <div class="cell">
+        <input class="slot" inputmode="text" autocapitalize="characters" maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="next" aria-label="key character 6"/>
+        <span class="pill">×10</span>
+      </div>
     </div>
 
-    <button class="open" id="open" type="button">Open the vault</button>
-    <div class="msg" id="msg" role="status" aria-live="polite"></div>
+    <div class="hud">
+      <span>locked <b id="lockedCount">0/6</b></span>
+      <span class="sep">•</span>
+      <span class="miss">misses <b id="missCount">0</b></span>
+    </div>
 
-    <!-- HIDDEN CLUE #3 (Inspect the DOM): base64 -> last two characters -->
-    <span class="buried" aria-hidden="true">access-key tail fragment 3 of 3 = JEE=</span>
   </div>
 
   <!-- WIN -->
@@ -313,27 +438,39 @@
     <div class="wintitle">YOU WON!</div>
     <div class="winsub">you cracked the hunt</div>
   </div>
+
   <div class="shockwave" id="shock"></div>
   <canvas id="confetti"></canvas>
   <div class="flash" id="flash"></div>
   <div class="toast" id="toast" role="alert"></div>
 
-<script>
-  /* ===== HIDDEN CLUE #2 (console): base64 -> middle two characters ===== */
-  console.log("%cTHE HUNT","font:900 22px Trebuchet MS;color:#F4C95D;text-shadow:0 0 8px #E8A72C;");
-  console.log("Fragment 2 of 3 (base64): OFI=  ->  it decodes to " + atob("OFI="));
+  <!-- OVERRIDE MODAL -->
+  <div class="modal-back" id="modalback">
+    <div class="modal" id="modalbox">
+      <div class="modal-emoji">⛓️</div>
+      <h2>SLOT <b id="jamNum">1</b> JAMMED</h2>
+      <p>Ten wrong tries — the mechanism seized up.<br/>Enter the override code to restore it.</p>
+      <input id="override" maxlength="3" inputmode="text" autocapitalize="characters"
+             autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go"
+             placeholder="•••" aria-label="override code"/>
+      <div class="modal-btns">
+        <button class="mbtn ghost" id="cancelBtn" type="button">Cancel</button>
+        <button class="mbtn go" id="unlockBtn" type="button">Unlock</button>
+      </div>
+      <div class="modal-msg" id="modalMsg"></div>
+    </div>
+  </div>
 
-  /* The key. Case-insensitive. Runs in the browser, so it's readable in
-     source — fine for a local for-fun hunt; a public "trusted" version
-     needs a tiny server check. */
-  const WINNING_CODE = "Z#8R$A";
-  const FIRST2 = WINNING_CODE.slice(0,2);   // milestone hint: first two characters
+<script>
+  /* The key (case-insensitive) and the jam override code. */
+  const CODE = "Z#8R$A";
+  const UNLOCK_CODE = "BAT";
+  const TRIES_MAX = 10;
 
   const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
   function vibe(p){ if(navigator.vibrate){ try{ navigator.vibrate(p); }catch(e){} } }
 
-  /* ---------- twinkling starfield ---------- */
+  /* ================= BACKGROUND ================= */
   (function(){
     const s=document.getElementById("stars");
     const n=REDUCE?0:60;
@@ -347,12 +484,22 @@
       st.style.animationDelay=(-Math.random()*5)+"s";
       s.appendChild(st);
     }
+    if(!REDUCE){
+      for(let i=0;i<3;i++){
+        const sh=document.createElement("span"); sh.className="shoot";
+        sh.style.top=(4+Math.random()*30)+"vh";
+        sh.style.left=(35+Math.random()*60)+"vw";
+        sh.style.animationDuration=(9+Math.random()*8)+"s";
+        sh.style.animationDelay=(2+Math.random()*8)+"s";
+        s.appendChild(sh);
+      }
+    }
   })();
 
-  /* ---------- ambient sparkles + drifting treasures ---------- */
   (function(){
+    if(REDUCE) return;
     const wrap=document.getElementById("sparkles");
-    for(let i=0;i<26;i++){
+    for(let i=0;i<24;i++){
       const s=document.createElement("span"); s.className="spark";
       s.style.left=Math.random()*100+"vw";
       s.style.animationDuration=(5+Math.random()*7)+"s";
@@ -372,23 +519,23 @@
     }
   })();
 
-  /* ---------- subtle parallax (pointer + device tilt) ---------- */
+  /* subtle parallax */
   (function(){
     if(REDUCE) return;
     const bg=document.getElementById("bg"), sp=document.getElementById("sparkles");
-    let tx=0,ty=0,cx=0,cy=0,raf=0;
+    let tx=0,ty=0,px=0,py=0,raf=0;
     function apply(){
-      cx+=(tx-cx)*.08; cy+=(ty-cy)*.08;
-      bg.style.transform=`translate3d(${cx*10}px,${cy*10}px,0)`;
-      sp.style.transform=`translate3d(${cx*5}px,${cy*5}px,0)`;
-      if(Math.abs(tx-cx)>.001||Math.abs(ty-cy)>.001){ raf=requestAnimationFrame(apply); } else { raf=0; }
+      px+=(tx-px)*.08; py+=(ty-py)*.08;
+      bg.style.transform=`translate3d(${px*10}px,${py*10}px,0)`;
+      sp.style.transform=`translate3d(${px*5}px,${py*5}px,0)`;
+      if(Math.abs(tx-px)>.001||Math.abs(ty-py)>.001){ raf=requestAnimationFrame(apply); } else { raf=0; }
     }
     function set(x,y){ tx=Math.max(-1,Math.min(1,x)); ty=Math.max(-1,Math.min(1,y)); if(!raf) raf=requestAnimationFrame(apply); }
-    addEventListener("pointermove", e=>set((e.clientX/innerWidth-.5)*2, (e.clientY/innerHeight-.5)*2), {passive:true});
-    addEventListener("deviceorientation", e=>{ if(e.gamma==null) return; set(e.gamma/30, (e.beta-45)/30); }, true);
+    addEventListener("pointermove", e=>set((e.clientX/innerWidth-.5)*2,(e.clientY/innerHeight-.5)*2), {passive:true});
+    addEventListener("deviceorientation", e=>{ if(e.gamma==null) return; set(e.gamma/30,(e.beta-45)/30); }, true);
   })();
 
-  /* ---------- sound (Web Audio, synthesized) ---------- */
+  /* ================= SOUND ================= */
   let AC=null;
   function audio(){ if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();} if(AC.state==="suspended") AC.resume(); return AC; }
   function beep(freq,start,dur,type="sine",vol=.25){
@@ -400,124 +547,304 @@
     g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
     o.connect(g).connect(ac.destination); o.start(t); o.stop(t+dur+0.02);
   }
-  const tick=()=>beep(660,0,.06,"square",.12);
-  const buzz=()=>{ beep(200,0,.18,"sawtooth",.22); beep(150,.09,.2,"sawtooth",.22); };
+  const tick =()=>beep(660,0,.06,"square",.12);
+  const tock =()=>beep(400,0,.06,"square",.1);                       // delete
+  const lockDing=()=>{ beep(880,0,.07,"sine",.16); beep(1320,.06,.14,"sine",.16); };
+  const buzz =()=>{ beep(200,0,.14,"sawtooth",.2); beep(150,.07,.16,"sawtooth",.18); };
+  const clunk=()=>{ beep(90,0,.22,"square",.26); beep(60,.05,.3,"sine",.28); };
+  const unlockDing=()=>{ beep(660,0,.1,"sine",.16); beep(990,.09,.1,"sine",.16); beep(1320,.18,.2,"sine",.16); };
   function boom(){ beep(120,0,.25,"sine",.18); beep(90,0,.3,"triangle",.13); beep(1200+Math.random()*700,.02,.12,"square",.06); }
-  function treasure(){
+  function fanfare(){
     beep(988,0,.09,"square",.18); beep(1319,.08,.16,"square",.2);
     const notes=[523,659,784,1047,1319];
     notes.forEach((f,i)=>beep(f,.28+i*0.12,.5,"triangle",.22));
     beep(1568,.28+notes.length*0.12,.7,"triangle",.18);
   }
 
+  /* ================= ELEMENTS ================= */
   const loader=document.getElementById("loader"),
         tap=document.getElementById("tap"),
         vault=document.getElementById("vault"),
-        digits=[...document.querySelectorAll(".digit")],
-        openBtn=document.getElementById("open"),
-        msg=document.getElementById("msg"),
+        cells=[...document.querySelectorAll(".cell")],
+        slots=[...document.querySelectorAll(".slot")],
+        pills=[...document.querySelectorAll(".pill")],
+        lockedCount=document.getElementById("lockedCount"),
+        missCount=document.getElementById("missCount"),
         win=document.getElementById("win"),
-        flash=document.getElementById("flash");
+        flash=document.getElementById("flash"),
+        shock=document.getElementById("shock"),
+        toast=document.getElementById("toast"),
+        modalback=document.getElementById("modalback"),
+        modalbox=document.getElementById("modalbox"),
+        jamNum=document.getElementById("jamNum"),
+        override=document.getElementById("override"),
+        unlockBtn=document.getElementById("unlockBtn"),
+        cancelBtn=document.getElementById("cancelBtn"),
+        modalMsg=document.getElementById("modalMsg");
 
+  /* ================= LOADER ================= */
   setTimeout(()=>tap.classList.add("show"), 2600);
-
+  let started=false;
   function begin(){
-    audio();
+    if(started) return; started=true;
+    audio(); beep(520,0,.08,"sine",.12); beep(780,.07,.1,"sine",.12);
     loader.classList.add("hide");
     vault.classList.add("show");
     vibe(12);
-    setTimeout(()=>digits[0].focus(), 500);
+    setTimeout(()=>slots[0].focus(), 550);
     window.removeEventListener("pointerdown", begin);
   }
   window.addEventListener("pointerdown", begin);
 
-  /* ---------- alphanumeric entry, case-insensitive, auto-advance ---------- */
-  digits.forEach((d,i)=>{
-    d.addEventListener("input",()=>{
-      d.value=d.value.replace(/[^a-zA-Z0-9#$%&@!?*]/g,"").toUpperCase().slice(0,1);
-      d.classList.toggle("filled", d.value!=="");
+  /* ================= GAME STATE ================= */
+  const tries = [TRIES_MAX,TRIES_MAX,TRIES_MAX,TRIES_MAX,TRIES_MAX,TRIES_MAX];
+  const jammed = [false,false,false,false,false,false];
+  let misses=0, won=false;
+
+  const isLocked = i => slots[i].classList.contains("locked");
+  const isBlocked = i => isLocked(i) || jammed[i];
+  function lockedTotal(){ return slots.filter(s=>s.classList.contains("locked")).length; }
+
+  function updatePill(i){
+    const p=pills[i];
+    p.classList.remove("low","ok","jam");
+    if(isLocked(i)){ p.textContent="✓"; p.classList.add("ok"); }
+    else if(jammed[i]){ p.textContent="TAP"; p.classList.add("jam"); }
+    else{
+      p.textContent="×"+tries[i];
+      if(tries[i]<=3) p.classList.add("low");
+    }
+  }
+  function updateHUD(){
+    lockedCount.textContent=lockedTotal()+"/6";
+    missCount.textContent=String(misses);
+    slots.forEach((_,i)=>updatePill(i));
+  }
+
+  let toastT=null;
+  function showToast(html,kind){
+    toast.innerHTML=html;
+    toast.classList.toggle("good", kind==="good");
+    toast.classList.add("show");
+    clearTimeout(toastT);
+    toastT=setTimeout(()=>toast.classList.remove("show"), 2200);
+  }
+
+  function burstAt(el){
+    if(REDUCE) return;
+    const r=el.getBoundingClientRect();
+    const px=r.left+r.width/2, py=r.top+r.height/2;
+    for(let k=0;k<10;k++){
+      const s=document.createElement("i"); s.className="burst";
+      const a=Math.random()*Math.PI*2, d=26+Math.random()*32;
+      s.style.left=px+"px"; s.style.top=py+"px";
+      s.style.setProperty("--dx",(Math.cos(a)*d)+"px");
+      s.style.setProperty("--dy",(Math.sin(a)*d)+"px");
+      document.body.appendChild(s);
+      setTimeout(()=>s.remove(),700);
+    }
+  }
+
+  function nextOpenSlot(from){
+    for(let k=from;k<6;k++) if(!isBlocked(k)) return slots[k];
+    for(let k=0;k<from;k++) if(!isBlocked(k)) return slots[k];
+    return null;
+  }
+
+  /* ================= SLOT LOGIC ================= */
+  function lockSlot(i){
+    const d=slots[i];
+    d.value=CODE[i];
+    d.readOnly=true;
+    d.classList.remove("wrong");
+    d.classList.add("locked");
+    lockDing(); vibe([0,18,26,18]);
+    burstAt(d);
+    updateHUD();
+    if(lockedTotal()===6){ winSequence(); return; }
+    if(lockedTotal()===5) showToast("🔥 <b>one more</b> — the vault is trembling","good");
+    const nxt=nextOpenSlot(i+1);
+    if(nxt) nxt.focus();
+  }
+
+  function jamSlot(i){
+    const d=slots[i];
+    jammed[i]=true;
+    d.readOnly=true;
+    d.value="";
+    d.classList.remove("wrong");
+    d.classList.add("jammed");
+    clunk(); vibe([60,40,80]);
+    updateHUD();
+    showToast(`⛓️ slot ${i+1} <b>jammed</b> — tap it and enter the override code`);
+  }
+
+  function unjamSlot(i){
+    const d=slots[i];
+    jammed[i]=false;
+    tries[i]=TRIES_MAX;
+    d.readOnly=false;
+    d.classList.remove("jammed");
+    d.value="";
+    unlockDing(); vibe([0,25,40,25]);
+    burstAt(d);
+    updateHUD();
+    showToast(`🔓 slot ${i+1} restored — <b>${TRIES_MAX} fresh tries</b>`,"good");
+    setTimeout(()=>d.focus(), 100);
+  }
+
+  function wrongEntry(i,ch){
+    const d=slots[i];
+    misses++;
+    tries[i]--;
+    updateHUD();
+    buzz(); vibe([40,30,40]);
+    d.classList.remove("wrong"); void d.offsetWidth; d.classList.add("wrong");
+    if(tries[i]<=0){
+      setTimeout(()=>jamSlot(i), 420);
+      showToast(`⛔ <b>"${ch}"</b> isn't right — slot ${i+1} is jamming!`);
+    }else{
+      showToast(`⛔ <b>"${ch}"</b> isn't right for slot ${i+1} — ${tries[i]} ${tries[i]===1?"try":"tries"} left`);
+    }
+    d.readOnly=true;                      // freeze during the reject flash
+    setTimeout(()=>{
+      if(jammed[i] || tries[i]<=0) return;   // jam is taking over this slot
+      d.readOnly=false;
+      d.value="";
       d.classList.remove("wrong");
-      if(d.value){ tick(); vibe(8); if(i<5) digits[i+1].focus(); }
-      checkProgress();
+      d.focus();
+    }, 400);
+  }
+
+  function handleChar(i,raw){
+    const ch=raw.toUpperCase();
+    if(!ch.trim()){ slots[i].value=""; return; }
+    if(ch===CODE[i]) lockSlot(i);
+    else wrongEntry(i,ch);
+  }
+
+  slots.forEach((d,i)=>{
+    d.addEventListener("focus",()=>d.select());
+    d.addEventListener("pointerdown",e=>{
+      if(jammed[i] && !won){ e.preventDefault(); openModal(i); }
+    });
+    d.addEventListener("input",()=>{
+      if(won) return;
+      if(d.readOnly){ d.value=isLocked(i)?CODE[i]:d.value; return; }
+      const ch=d.value.slice(-1);
+      d.value=ch;
+      if(!ch){ tock(); vibe(6); return; }   // deleted -> delete sound
+      tick();
+      handleChar(i,ch);
     });
     d.addEventListener("keydown",e=>{
-      if(e.key==="Backspace" && !d.value && i>0){ digits[i-1].focus(); digits[i-1].value=""; digits[i-1].classList.remove("filled"); checkProgress(); }
-      if(e.key==="Enter") tryOpen();
+      if(won) return;
+      if(e.key==="Backspace" && (!d.value || d.readOnly)){
+        e.preventDefault();
+        for(let k=i-1;k>=0;k--){
+          if(!isBlocked(k) && !slots[k].readOnly){
+            if(slots[k].value){ slots[k].value=""; tock(); vibe(6); }
+            slots[k].focus();
+            break;
+          }
+        }
+      }
+      if(e.key==="ArrowLeft" && i>0){ e.preventDefault(); slots[i-1].focus(); }
+      if(e.key==="ArrowRight" && i<5){ e.preventDefault(); slots[i+1].focus(); }
+    });
+    d.addEventListener("paste",e=>{
+      e.preventDefault();
+      if(won) return;
+      const text=(e.clipboardData||window.clipboardData).getData("text").toUpperCase().replace(/\s/g,"");
+      if(!text) return;
+      let j=i;
+      for(const ch of text){
+        while(j<6 && isBlocked(j)) j++;
+        if(j>5) break;
+        if(ch===CODE[j]){ lockSlot(j); if(won) return; j++; }
+        else { wrongEntry(j,ch); return; }
+      }
     });
   });
 
-  function tryOpen(){
-    const code=digits.map(d=>d.value).join("").toUpperCase();
-    const complete=digits.every(d=>d.value!=="");   // all six boxes must be filled
-    if(complete && code.length===WINNING_CODE.length && code===WINNING_CODE){
-      msg.textContent=""; openBtn.disabled=true;
-      flash.classList.add("go");
-      win.classList.add("show"); treasure(); celebrate();
+  /* ================= OVERRIDE MODAL ================= */
+  let jamTarget=-1;
+  function openModal(i){
+    jamTarget=i;
+    jamNum.textContent=String(i+1);
+    override.value="";
+    modalMsg.textContent="";
+    modalback.classList.add("show");
+    setTimeout(()=>override.focus(), 280);
+  }
+  function closeModal(){
+    modalback.classList.remove("show");
+    jamTarget=-1;
+  }
+  function tryUnlock(){
+    if(jamTarget<0) return;
+    const val=override.value.trim().toUpperCase();
+    if(val===UNLOCK_CODE){
+      const i=jamTarget;
+      closeModal();
+      unjamSlot(i);
     }else{
-      msg.textContent="Wrong key — keep hunting"; msg.classList.add("bad"); buzz();
-      vibe([40,30,40]);
-      digits.forEach(d=>{ d.classList.remove("wrong"); void d.offsetWidth; d.classList.add("wrong"); });
-      vault.classList.remove("shake"); void vault.offsetWidth; vault.classList.add("shake");
-      document.body.classList.remove("redflash"); void document.body.offsetWidth; document.body.classList.add("redflash");
+      modalMsg.textContent="wrong code — keep hunting";
+      buzz(); vibe([40,30,40]);
+      modalbox.classList.remove("shake"); void modalbox.offsetWidth; modalbox.classList.add("shake");
+      override.value="";
+      override.focus();
     }
   }
-  openBtn.addEventListener("click", tryOpen);
+  unlockBtn.addEventListener("click", tryUnlock);
+  cancelBtn.addEventListener("click", closeModal);
+  override.addEventListener("keydown", e=>{ if(e.key==="Enter") tryUnlock(); });
+  override.addEventListener("input", ()=>{ modalMsg.textContent=""; tick(); });
+  modalback.addEventListener("pointerdown", e=>{ if(e.target===modalback) closeModal(); });
 
-  /* ---------- milestone hint: green when first two are right, toast when wrong ----------
-     Only ever reveals ONE bit ("first two correct or not"), never which character
-     is off — so it guides without making the full key guessable.                        */
-  const toast=document.getElementById("toast");
-  let toastT=null;
-  function showToast(text){
-    toast.textContent=text; toast.classList.add("show");
-    clearTimeout(toastT); toastT=setTimeout(()=>toast.classList.remove("show"), 2600);
-  }
-  const ding=()=>{ beep(880,0,.08,"sine",.16); beep(1175,.07,.16,"sine",.16); };
-
-  let lastSig=null;
-  function checkProgress(){
-    const a=digits[0].value, b=digits[1].value;
-    const sig=a+"|"+b;
-    const changed = sig!==lastSig;      // did the first two boxes actually change?
-    lastSig=sig;
-
-    const firstWrong  = a!=="" && a!==FIRST2[0];
-    const secondWrong = a===FIRST2[0] && b!=="" && b!==FIRST2[1];
-    const bothRight   = a!=="" && b!=="" && a===FIRST2[0] && b===FIRST2[1];
-
-    // green outline ONLY when the first two are both correct
-    digits[0].classList.toggle("good", bothRight);
-    digits[1].classList.toggle("good", bothRight);
-
-    if(!changed) return;                // typing in boxes 3-6 shouldn't re-fire hints
-    if(bothRight){ toast.classList.remove("show"); ding(); vibe([0,25,40,25]); }
-    else if(firstWrong || secondWrong){ showToast("🧭 First two aren't right — keep hunting"); vibe(30); }
+  /* ================= WIN ================= */
+  function winSequence(){
+    won=true;
+    if(document.activeElement) document.activeElement.blur();
+    setTimeout(()=>{
+      flash.classList.add("go");
+      shock.classList.add("go");
+      vault.classList.remove("show");
+      win.classList.add("show");
+      sizeCanvas(); addConfetti(); runParticles();
+      emojiBurst(); fanfare();
+      vibe([0,60,40,120,40,200]);
+      let n=0; const iv=setInterval(()=>{
+        firework(cw*(.2+Math.random()*.6), chh*(.16+Math.random()*.36)); boom();
+        if(++n>=7) clearInterval(iv);
+      }, 250);
+    }, 350);
   }
 
-  /* ---------- celebration: confetti coins + fireworks + emoji shower ---------- */
-  const cv=document.getElementById("confetti"), cx=cv.getContext("2d");
-  let cw=0, ch=0, dpr=1;
+  /* ================= CONFETTI / FIREWORKS ================= */
+  const cv=document.getElementById("confetti"), ctx=cv.getContext("2d");
+  let cw=0, chh=0, dpr=1;
   function sizeCanvas(){
     dpr=Math.min(2, window.devicePixelRatio||1);
-    cw=innerWidth; ch=innerHeight;
-    cv.width=cw*dpr; cv.height=ch*dpr;
-    cv.style.width=cw+"px"; cv.style.height=ch+"px";
-    cx.setTransform(dpr,0,0,dpr,0,0);
+    cw=innerWidth; chh=innerHeight;
+    cv.width=cw*dpr; cv.height=chh*dpr;
+    cv.style.width=cw+"px"; cv.style.height=chh+"px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
   }
   addEventListener("resize", ()=>{ if(cw) sizeCanvas(); });
 
+  const COLS=["#F4C95D","#FFE9A8","#E8A72C","#2FBF9F","#ffffff"];
   let parts=[], running=false;
   function addConfetti(){
-    const cols=["#F4C95D","#FFE9A8","#E8A72C","#2FBF9F","#fff"];
     for(let i=0;i<200;i++){
-      parts.push({t:"coin", x:Math.random()*cw, y:-20-Math.random()*ch, r:5+Math.random()*8,
-        vy:2+Math.random()*4.5, vx:-1.8+Math.random()*3.6, col:cols[(Math.random()*cols.length)|0],
+      parts.push({t:"coin", x:Math.random()*cw, y:-20-Math.random()*chh, r:5+Math.random()*8,
+        vy:2+Math.random()*4.5, vx:-1.8+Math.random()*3.6,
+        col:COLS[(Math.random()*COLS.length)|0],
         sp:Math.random()*6, rot:Math.random()*6});
     }
   }
   function firework(x,y){
-    const cols=["#F4C95D","#FFE9A8","#E8A72C","#2FBF9F","#E4572E","#fff"];
-    const col=cols[(Math.random()*cols.length)|0], n=44;
+    const col=COLS[(Math.random()*COLS.length)|0], n=44;
     for(let i=0;i<n;i++){
       const a=(i/n)*Math.PI*2, s=2+Math.random()*4.5;
       parts.push({t:"spark", x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, r:2+Math.random()*2,
@@ -527,21 +854,21 @@
   function runParticles(){
     if(running) return; running=true;
     (function loop(){
-      cx.clearRect(0,0,cw,ch);
-      parts=parts.filter(p=> p.t==="coin" ? p.y<ch+40 : p.life>0);
+      ctx.clearRect(0,0,cw,chh);
+      parts=parts.filter(p=> p.t==="coin" ? p.y<chh+40 : p.life>0);
       const now=performance.now();
       parts.forEach(p=>{
         if(p.t==="coin"){
           p.y+=p.vy; p.x+=p.vx+Math.sin(now/200+p.sp); p.rot+=.16;
-          cx.save(); cx.translate(p.x,p.y); cx.rotate(p.rot);
-          cx.fillStyle=p.col; cx.beginPath(); cx.ellipse(0,0,p.r,p.r*.55,0,0,7); cx.fill(); cx.restore();
+          ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+          ctx.fillStyle=p.col; ctx.beginPath(); ctx.ellipse(0,0,p.r,p.r*.55,0,0,7); ctx.fill(); ctx.restore();
         }else{
           p.vy+=.05; p.vx*=.99; p.vy*=.99; p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
-          cx.globalAlpha=Math.max(0,p.life); cx.fillStyle=p.col;
-          cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fill(); cx.globalAlpha=1;
+          ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle=p.col;
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill(); ctx.globalAlpha=1;
         }
       });
-      if(parts.length){ requestAnimationFrame(loop); } else { running=false; cx.clearRect(0,0,cw,ch); }
+      if(parts.length){ requestAnimationFrame(loop); } else { running=false; ctx.clearRect(0,0,cw,chh); }
     })();
   }
   function emojiBurst(){
@@ -555,17 +882,6 @@
       document.body.appendChild(s);
       setTimeout(()=>s.remove(), 2800);
     }
-  }
-  function celebrate(){
-    sizeCanvas();
-    addConfetti(); runParticles();
-    document.getElementById("shock").classList.add("go");
-    emojiBurst();
-    vibe([0,60,40,120,40,200]);
-    let n=0; const iv=setInterval(()=>{
-      firework(cw*(.2+Math.random()*.6), ch*(.18+Math.random()*.34)); boom();
-      if(++n>=6) clearInterval(iv);
-    }, 260);
   }
 </script>
 </body>
