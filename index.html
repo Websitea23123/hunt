@@ -599,6 +599,7 @@
   /* ================= GAME STATE ================= */
   const tries = [TRIES_MAX,TRIES_MAX,TRIES_MAX,TRIES_MAX,TRIES_MAX,TRIES_MAX];
   const jammed = [false,false,false,false,false,false];
+  const busy = [false,false,false,false,false,false];   // slot frozen during a reject flash (keeps keyboard up)
   let misses=0, won=false;
 
   const isLocked = i => slots[i].classList.contains("locked");
@@ -682,6 +683,7 @@
   function unjamSlot(i){
     const d=slots[i];
     jammed[i]=false;
+    busy[i]=false;
     tries[i]=TRIES_MAX;
     d.readOnly=false;
     d.classList.remove("jammed");
@@ -690,7 +692,7 @@
     burstAt(d);
     updateHUD();
     showToast(`🔓 slot ${i+1} restored — <b>${TRIES_MAX} fresh tries</b>`,"good");
-    setTimeout(()=>d.focus(), 100);
+    d.focus({preventScroll:true});   // still inside the Unlock gesture -> keyboard stays open
   }
 
   function wrongEntry(i,ch){
@@ -700,19 +702,22 @@
     updateHUD();
     buzz(); vibe([40,30,40]);
     d.classList.remove("wrong"); void d.offsetWidth; d.classList.add("wrong");
+    // Freeze the slot for the reject flash WITHOUT toggling readOnly — going
+    // readOnly on a focused field retracts the on-screen keyboard, so we just
+    // ignore input via `busy` while keeping the field editable and focused.
+    busy[i]=true;
     if(tries[i]<=0){
-      setTimeout(()=>jamSlot(i), 420);
+      setTimeout(()=>jamSlot(i), 420);       // jam takes over this slot
       showToast(`⛔ <b>"${ch}"</b> isn't right — slot ${i+1} is jamming!`);
-    }else{
-      showToast(`⛔ <b>"${ch}"</b> isn't right for slot ${i+1} — ${tries[i]} ${tries[i]===1?"try":"tries"} left`);
+      return;
     }
-    d.readOnly=true;                      // freeze during the reject flash
+    showToast(`⛔ <b>"${ch}"</b> isn't right for slot ${i+1} — ${tries[i]} ${tries[i]===1?"try":"tries"} left`);
     setTimeout(()=>{
-      if(jammed[i] || tries[i]<=0) return;   // jam is taking over this slot
-      d.readOnly=false;
+      if(jammed[i]) return;                  // jam already took over this slot
+      busy[i]=false;
       d.value="";
       d.classList.remove("wrong");
-      d.focus();
+      if(document.activeElement===d) d.select();   // keep caret; never steal/re-open focus
     }, 400);
   }
 
@@ -731,6 +736,7 @@
     d.addEventListener("input",()=>{
       if(won) return;
       if(d.readOnly){ d.value=isLocked(i)?CODE[i]:d.value; return; }
+      if(busy[i]) return;                   // reject flash in progress; ignore input but keep keyboard up
       const ch=d.value.slice(-1);
       d.value=ch;
       if(!ch){ tock(); vibe(6); return; }   // deleted -> delete sound
@@ -770,12 +776,15 @@
   /* ================= OVERRIDE MODAL ================= */
   let jamTarget=-1;
   function openModal(i){
+    if(modalback.classList.contains("show")) return;   // already open — don't re-trigger / flicker
     jamTarget=i;
     jamNum.textContent=String(i+1);
     override.value="";
     modalMsg.textContent="";
     modalback.classList.add("show");
-    setTimeout(()=>override.focus(), 280);
+    // Focus synchronously, still inside the tap gesture, so the mobile keyboard
+    // opens once instead of flickering from a delayed (non-gesture) focus.
+    override.focus({preventScroll:true});
   }
   function closeModal(){
     modalback.classList.remove("show");
