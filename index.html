@@ -589,9 +589,13 @@
     if(started) return; started=true;
     audio(); beep(520,0,.08,"sine",.12); beep(780,.07,.1,"sine",.12);
     loader.classList.add("hide");
-    vault.classList.add("show");
     vibe(12);
-    setTimeout(()=>slots[0].focus(), 550);
+    if(won){
+      winSequence();                 // already cracked it — straight to the win screen
+    }else{
+      vault.classList.add("show");
+      setTimeout(()=>{ const n=nextOpenSlot(0); if(n) n.focus(); }, 550);
+    }
     window.removeEventListener("pointerdown", begin);
   }
   window.addEventListener("pointerdown", begin);
@@ -652,6 +656,42 @@
     return null;
   }
 
+  /* ================= PERSISTENCE =================
+     Save progress to localStorage so reloading / going back and re-entering
+     the URL does NOT reset the tries. Bump SAVE_KEY if you change CODE. */
+  const SAVE_KEY="hunt-save-v1";
+  function saveState(){
+    try{
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        tries:[...tries], jammed:[...jammed],
+        locked:slots.map((_,i)=>isLocked(i)),
+        misses, won
+      }));
+    }catch(e){}
+  }
+  function restoreState(){
+    let st=null;
+    try{ st=JSON.parse(localStorage.getItem(SAVE_KEY)); }catch(e){}
+    if(!st || !Array.isArray(st.tries) || st.tries.length!==6) return;
+    for(let k=0;k<6;k++){
+      tries[k]=Math.max(0, Math.min(TRIES_MAX, st.tries[k]|0));
+      jammed[k]=!!(st.jammed&&st.jammed[k]);
+      const d=slots[k];
+      if(st.locked && st.locked[k]){
+        d.value=CODE[k]; d.readOnly=true; d.classList.add("locked");
+      }else if(jammed[k]){
+        d.readOnly=true; d.classList.add("jammed");
+      }
+    }
+    misses=st.misses|0;
+    won=!!st.won;
+    updateHUD();
+  }
+  restoreState();
+  /* bfcache back/forward restore would bring back stale in-memory state —
+     force a reload so the saved (real) state is what counts */
+  addEventListener("pageshow", e=>{ if(e.persisted) location.reload(); });
+
   /* ================= SLOT LOGIC ================= */
   function lockSlot(i){
     const d=slots[i];
@@ -662,6 +702,7 @@
     lockDing(); vibe([0,18,26,18]);
     burstAt(d);
     updateHUD();
+    saveState();
     if(lockedTotal()===6){ winSequence(); return; }
     if(lockedTotal()===5) showToast("🔥 <b>one more</b> — the vault is trembling","good");
     const nxt=nextOpenSlot(i+1);
@@ -677,6 +718,7 @@
     d.classList.add("jammed");
     clunk(); vibe([60,40,80]);
     updateHUD();
+    saveState();
     showToast(`⛓️ slot ${i+1} <b>jammed</b> — tap it and enter the override code`);
   }
 
@@ -691,6 +733,7 @@
     unlockDing(); vibe([0,25,40,25]);
     burstAt(d);
     updateHUD();
+    saveState();
     showToast(`🔓 slot ${i+1} restored — <b>${TRIES_MAX} fresh tries</b>`,"good");
     d.focus({preventScroll:true});   // still inside the Unlock gesture -> keyboard stays open
   }
@@ -700,6 +743,7 @@
     misses++;
     tries[i]--;
     updateHUD();
+    saveState();
     buzz(); vibe([40,30,40]);
     d.classList.remove("wrong"); void d.offsetWidth; d.classList.add("wrong");
     // Freeze the slot for the reject flash WITHOUT toggling readOnly — going
@@ -814,6 +858,7 @@
   /* ================= WIN ================= */
   function winSequence(){
     won=true;
+    saveState();
     if(document.activeElement) document.activeElement.blur();
     setTimeout(()=>{
       flash.classList.add("go");
